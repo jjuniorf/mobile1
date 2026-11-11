@@ -292,13 +292,69 @@ img{display:block}
   padding:5px 11px;border-radius:999px;
 }
 .desc{font-size:13.5px;line-height:1.62;color:#b6b6c4;margin:0 0 20px;font-weight:450}
-.sheet-actions{display:flex;gap:10px;margin-bottom:26px}
+.sheet-actions{display:flex;gap:10px;margin-bottom:16px}
 .sheet-actions .btn-main{flex:1;padding:15px 20px;font-size:14.5px}
 .sheet-actions .btn-round{width:52px;height:52px;flex:0 0 auto;background:var(--surface2);border-color:var(--line)}
 .sheet-actions .btn-round svg{stroke:#fff}
 .sheet-actions .btn-round.on{background:rgba(255,59,92,.18);border-color:rgba(255,59,92,.45)}
 .sheet-actions .btn-round.on svg{fill:var(--accent);stroke:var(--accent)}
 .more-h{font-size:15.5px;font-weight:750;letter-spacing:-.3px;margin:0 0 12px}
+
+/* ================= INLINE PLAYER ================= */
+.inline-player{
+  margin:0 0 22px 0;
+  border-radius:14px;
+  overflow:hidden;
+  background:#000;
+  position:relative;
+  animation:playerIn .38s cubic-bezier(.22,.61,.36,1);
+  box-shadow:0 10px 30px rgba(0,0,0,.5);
+}
+.inline-player[hidden]{display:none}
+@keyframes playerIn{
+  from{opacity:0;transform:translateY(-10px) scale(.97)}
+  to{opacity:1;transform:none}
+}
+.inline-player-frame{
+  position:relative;
+  width:100%;
+  aspect-ratio:16/9;
+  background:#000;
+}
+.inline-player-frame iframe{
+  position:absolute;inset:0;width:100%;height:100%;border:0;
+}
+.inline-close{
+  position:absolute;top:10px;right:10px;z-index:5;
+  width:32px;height:32px;border-radius:50%;
+  display:grid;place-items:center;
+  background:rgba(0,0,0,.65);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.18);
+  transition:transform .15s ease,background .2s;
+}
+.inline-close:active{transform:scale(.9);background:rgba(0,0,0,.85)}
+.inline-close svg{
+  width:13px;height:13px;stroke:#fff;stroke-width:2.4;fill:none;stroke-linecap:round;
+}
+
+/* ================= POPUP SHIELD BADGE ================= */
+.shield-badge{
+  position:absolute;top:10px;left:10px;z-index:5;
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 9px 4px 7px;border-radius:999px;
+  background:rgba(0,0,0,.65);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(120,255,170,.35);
+  color:#d8ffe5;
+  font-size:9.5px;font-weight:750;letter-spacing:.3px;
+  transition:transform .15s ease,background .2s,border-color .2s;
+}
+.shield-badge:active{transform:scale(.94);background:rgba(0,0,0,.85)}
+.shield-badge .sb-icon{font-size:11px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+.shield-badge .sb-text{opacity:.92}
+.shield-badge.off{border-color:rgba(255,190,90,.4);color:#ffe4b5}
+.shield-badge.off .sb-icon{filter:grayscale(.3)}
 
 /* ================= SEASONS & EPISODES ================= */
 .seasons-section{margin-bottom:26px}
@@ -340,48 +396,6 @@ img{display:block}
   padding:20px;text-align:center;color:var(--muted);font-size:12.5px;
   background:var(--surface);border:1px solid var(--line);border-radius:12px;
 }
-
-/* ================= PLAYER ================= */
-.player{
-  position:fixed;inset:0;z-index:200;background:#000;
-  display:flex;align-items:center;justify-content:center;
-  opacity:0;visibility:hidden;transition:opacity .28s ease,visibility .28s;
-}
-.player.open{opacity:1;visibility:visible}
-.player-frame{
-  width:100%;max-width:480px;aspect-ratio:16/9;background:#000;position:relative;
-}
-.player-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-
-/* ================= POPUP SHIELD BADGE ================= */
-.shield-badge{
-  position:absolute;top:calc(16px + env(safe-area-inset-top));left:16px;z-index:5;
-  display:inline-flex;align-items:center;gap:5px;
-  padding:5px 10px 5px 8px;border-radius:999px;
-  background:rgba(0,0,0,.6);
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  border:1px solid rgba(120,255,170,.35);
-  color:#d8ffe5;
-  font-size:10px;font-weight:750;letter-spacing:.3px;
-  transition:transform .15s ease,background .2s,border-color .2s,opacity .25s;
-  pointer-events:auto;
-}
-.shield-badge:active{transform:scale(.94);background:rgba(0,0,0,.8)}
-.shield-badge .sb-icon{font-size:12px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
-.shield-badge .sb-text{opacity:.92}
-.shield-badge.off{
-  border-color:rgba(255,190,90,.4);color:#ffe4b5;
-}
-.shield-badge.off .sb-icon{filter:grayscale(.3)}
-
-/* ================= PLAYER CLOSE ================= */
-.player-close{
-  position:absolute;top:calc(16px + env(safe-area-inset-top));right:18px;z-index:3;
-  width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
-  background:rgba(255,255,255,.12);backdrop-filter:blur(12px);
-  border:1px solid rgba(255,255,255,.18);
-}
-.player-close svg{width:16px;height:16px;stroke:#fff;stroke-width:2.2;stroke-linecap:round}
 
 /* ================= TOAST ================= */
 .toast{
@@ -495,43 +509,12 @@ body.locked{overflow:hidden}
   </button>
 </nav>
 
-<!-- ============ DETAIL SHEET ============ -->
+<!-- ============ DETAIL SHEET (inline player lives inside) ============ -->
 <div class="sheet" id="sheet">
   <button class="sheet-close" id="sheetClose">
     <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
   </button>
   <div class="sheet-scroll" id="sheetScroll"></div>
-</div>
-
-<!-- ============ PLAYER (with popup-shielded iframe) ============ -->
-<div class="player" id="player">
-  <div class="player-frame">
-
-    <!--
-      SANDBOX NOTE:
-      The sandbox attribute below is what actually blocks pop-ups. It is enforced
-      by the browser itself, so even if the embed site tries window.open(),
-      target="_blank" links, or top-level navigation, the browser refuses.
-
-      If an embed site BREAKS because it needs popups to work, set
-      POPUP_SHIELD = false in the JavaScript section below.
-    -->
-    <iframe id="embedFrame"
-            allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-            allowfullscreen
-            referrerpolicy="no-referrer"
-            sandbox="allow-scripts allow-same-origin allow-forms allow-orientation-lock allow-presentation"></iframe>
-
-    <button class="shield-badge" id="shieldBadge" type="button"
-            title="Pop-up protection is active">
-      <span class="sb-icon">🛡️</span>
-      <span class="sb-text">Protected</span>
-    </button>
-  </div>
-
-  <button class="player-close" id="playerClose">
-    <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
-  </button>
 </div>
 
 <!-- ============ TOAST ============ -->
@@ -552,7 +535,7 @@ const TMDB_API_KEY = '5adcefa4f28acf78843a6bc42e7b5e2d';
    ║                                                                      ║
    ║   ⬇⬇⬇   STEP 2: PUT YOUR STREAMING EMBED URLs ON THE NEXT LINES ⬇⬇⬇ ║
    ║                                                                      ║
-   ║   Use placeholders {id}, {season}, {episode} — replaced at play time ║
+   ║   Placeholders {id}, {season}, {episode} are replaced at play time.  ║
    ║                                                                      ║
    ║   Popular free embed sites:                                          ║
    ║     https://vidsrc.to/embed/movie/{id}                               ║
@@ -562,18 +545,12 @@ const TMDB_API_KEY = '5adcefa4f28acf78843a6bc42e7b5e2d';
    ║                                                                      ║
    ╚══════════════════════════════════════════════════════════════════════╝ */
 
-const MOVIE_URL = 'https://www.2embed.cc/embed/{id}';
-const TV_URL    = 'https://www.2embed.cc/embedtv/{id}&s={season}&e={episode}';
+const MOVIE_URL = 'https://cinesrc.st/embed/movie/{id}';
+const TV_URL    = 'https://cinesrc.st/embed/tv/{id}?s={season}&e={episode}';
 
 /* ╔══════════════════════════════════════════════════════════════════════╗
    ║                                                                      ║
    ║   ⬇⬇⬇   STEP 3: POPUP BLOCKER (leave true for max protection)  ⬇⬇⬇  ║
-   ║                                                                      ║
-   ║   true  → iframe is sandboxed, pop-ups/top-nav/redirects blocked     ║
-   ║   false → iframe is not sandboxed, pop-ups allowed                   ║
-   ║                                                                      ║
-   ║   Only set to false if your chosen embed site refuses to work        ║
-   ║   while sandboxed (rare — most embeds work fine with it).            ║
    ║                                                                      ║
    ╚══════════════════════════════════════════════════════════════════════╝ */
 
@@ -1099,7 +1076,7 @@ const sheet = $('#sheet');
 const sheetScroll = $('#sheetScroll');
 let currentItem = null;
 
-async function openDetail(id, type) {
+async function openDetail(id, type, autoPlay = false) {
   sheet.classList.add('open');
   document.body.classList.add('locked');
   sheetScroll.scrollTop = 0;
@@ -1108,6 +1085,11 @@ async function openDetail(id, type) {
   try {
     const d = await api(`/${type}/${id}`, { append_to_response: 'recommendations' });
     renderDetail(d, type);
+
+    if (autoPlay) {
+      /* Wait for the sheet slide animation, then play inline */
+      setTimeout(() => playContent(id, type), 380);
+    }
   } catch {
     sheetScroll.innerHTML = `<div style="padding-top:90px">${errorHTML('Could not load details.')}</div>`;
   }
@@ -1129,6 +1111,10 @@ function renderDetail(d, type) {
 
   const hasSeasons = type === 'tv' && Array.isArray(d.seasons) && d.seasons.length > 0;
   const playLabel = type === 'tv' ? 'Watch S1 E1' : 'Watch Now';
+
+  const sandboxAttr = POPUP_SHIELD
+    ? 'sandbox="allow-scripts allow-same-origin allow-forms allow-orientation-lock allow-presentation"'
+    : '';
 
   sheetScroll.innerHTML = `
     <div class="sheet-hero">
@@ -1156,6 +1142,25 @@ function renderDetail(d, type) {
         <button class="btn-round ${on ? 'on' : ''}" data-fav-sheet aria-label="Favorite">
           <svg viewBox="0 0 24 24"><path d="M12 20.2s-7.4-4.6-7.4-9.4A4.1 4.1 0 0 1 12 7.8a4.1 4.1 0 0 1 7.4 3c0 4.8-7.4 9.4-7.4 9.4z"/></svg>
         </button>
+      </div>
+
+      <!-- INLINE VIDEO PLAYER (hidden until user hits play) -->
+      <div class="inline-player" id="inlinePlayer" hidden>
+        <div class="inline-player-frame">
+          <iframe id="embedFrame"
+                  allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                  allowfullscreen
+                  referrerpolicy="no-referrer"
+                  ${sandboxAttr}></iframe>
+          <button class="shield-badge ${POPUP_SHIELD ? '' : 'off'}" id="shieldBadge" type="button"
+                  title="${POPUP_SHIELD ? 'Pop-up protection is active' : 'Pop-up protection is disabled'}">
+            <span class="sb-icon">🛡️</span>
+            <span class="sb-text">${POPUP_SHIELD ? 'Protected' : 'Unshielded'}</span>
+          </button>
+          <button class="inline-close" id="inlineClose" type="button" aria-label="Close player">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          </button>
+        </div>
       </div>
 
       ${hasSeasons ? `
@@ -1262,15 +1267,71 @@ async function loadSeasonEpisodes(seriesId, seasonNumber, chipsEl, listEl) {
 }
 
 /* =====================================================================
-   POPUP SHIELD
-   ---------------------------------------------------------------------
-   Defense layers:
-   1. iframe[ sandbox ]  ← browser-enforced, blocks window.open, _blank, top-nav
-   2. Parent window.open override    ← safety net on our own page
-   3. Parent anchor target=_blank guard ← safety net on our own page
+   INLINE PLAYER
+   ===================================================================== */
+let firstPlayToastShown = false;
+
+function playInline(url) {
+  if (!url) { toast('No source available'); return; }
+
+  const wrap  = $('#inlinePlayer');
+  const frame = $('#embedFrame');
+  if (!wrap || !frame) { toast('Player not ready'); return; }
+
+  frame.src = url;
+  wrap.hidden = false;
+
+  /* Scroll the player into view (works even inside the sheet-scroll container) */
+  setTimeout(() => {
+    try {
+      wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (_) {
+      /* older browsers */
+      const r = wrap.getBoundingClientRect();
+      if (r.top < 0 || r.bottom > window.innerHeight) {
+        wrap.scrollIntoView({ block: 'center' });
+      }
+    }
+  }, 40);
+
+  /* Friendly one-time hint */
+  if (POPUP_SHIELD && !firstPlayToastShown) {
+    firstPlayToastShown = true;
+    setTimeout(() => toast('🛡️ Pop-up protection active', 2200), 600);
+  }
+}
+
+function stopInline() {
+  const wrap  = $('#inlinePlayer');
+  const frame = $('#embedFrame');
+  if (wrap)  wrap.hidden = true;
+  if (frame) frame.src = '';
+}
+
+/* Public play actions */
+function playMovie(id) {
+  playInline(buildMovieUrl(id));
+}
+function playTV(id, season = 1, episode = 1) {
+  playInline(buildTVUrl(id, season, episode));
+}
+function playContent(id, type) {
+  if (type === 'tv') playTV(id, 1, 1);
+  else playMovie(id);
+}
+
+function closeDetail() {
+  stopInline();
+  sheet.classList.remove('open');
+  currentItem = null;
+  document.body.classList.remove('locked');
+}
+
+/* =====================================================================
+   POPUP SHIELD (parent-level guards)
    ===================================================================== */
 function setupPopupShield() {
-  /* Layer 2: override window.open on the parent page */
+  /* Override window.open on our page */
   try {
     const original = window.open;
     window.open = function (...args) {
@@ -1278,11 +1339,10 @@ function setupPopupShield() {
       toast('🛡️ Pop-up blocked');
       return null;
     };
-    // Stash original in case anyone needs it
     window.__reelixOriginalOpen = original;
-  } catch (_) { /* some environments lock window.open */ }
+  } catch (_) {}
 
-  /* Layer 3: block _blank links in our own page */
+  /* Block _blank anchors in our own page */
   document.addEventListener('click', (e) => {
     const a = e.target.closest('a[target="_blank"]');
     if (a && !a.hasAttribute('data-allow-popup')) {
@@ -1291,79 +1351,6 @@ function setupPopupShield() {
       toast('🛡️ Pop-up blocked');
     }
   }, true);
-
-  /* Reflect shield state in the badge */
-  const badge = $('#shieldBadge');
-  if (badge) {
-    badge.classList.toggle('off', !POPUP_SHIELD);
-    badge.title = POPUP_SHIELD
-      ? 'Pop-up protection is active'
-      : 'Pop-up protection is disabled';
-    badge.querySelector('.sb-text').textContent =
-      POPUP_SHIELD ? 'Protected' : 'Unshielded';
-
-    badge.addEventListener('click', () => {
-      toast(POPUP_SHIELD
-        ? '🛡️ Pop-ups & top-redirects blocked while playing'
-        : '⚠️ Pop-up shield is OFF — set POPUP_SHIELD = true to re-enable',
-        2400);
-    });
-  }
-
-  /* If user disabled the shield, remove sandbox once at boot */
-  if (!POPUP_SHIELD) {
-    const iframe = $('#embedFrame');
-    if (iframe) iframe.removeAttribute('sandbox');
-  }
-}
-
-/* =====================================================================
-   PLAYER — loads custom embed URLs
-   ===================================================================== */
-const player = $('#player');
-const embedFrame = $('#embedFrame');
-let firstPlayToastShown = false;
-
-function openEmbed(url) {
-  if (!url) { toast('No source available'); return; }
-  embedFrame.src = url;
-  player.classList.add('open');
-  document.body.classList.add('locked');
-
-  /* Ensure the parent window keeps focus so the video is interactive */
-  try { window.focus(); } catch (_) {}
-
-  /* Friendly first-time hint */
-  if (POPUP_SHIELD && !firstPlayToastShown) {
-    firstPlayToastShown = true;
-    setTimeout(() => toast('🛡️ Pop-up protection active', 2200), 500);
-  }
-}
-
-function closePlayer() {
-  player.classList.remove('open');
-  embedFrame.src = '';
-  if (!sheet.classList.contains('open')) document.body.classList.remove('locked');
-}
-
-/* Public play actions */
-function playMovie(id) {
-  openEmbed(buildMovieUrl(id));
-}
-function playTV(id, season = 1, episode = 1) {
-  openEmbed(buildTVUrl(id, season, episode));
-}
-function playContent(id, type) {
-  if (type === 'tv') playTV(id, 1, 1);
-  else playMovie(id);
-}
-
-$('#playerClose').addEventListener('click', closePlayer);
-
-function closeDetail() {
-  sheet.classList.remove('open');
-  currentItem = null;
-  if (!player.classList.contains('open')) document.body.classList.remove('locked');
 }
 
 /* =====================================================================
@@ -1425,9 +1412,31 @@ document.addEventListener('click', e => {
   if (e.target.closest('#heroFav')) { toggleFav(state.hero); return; }
   if (e.target.closest('[data-fav-sheet]')) { toggleFav(currentItem); return; }
 
+  /* Inline player close */
+  if (e.target.closest('#inlineClose')) { stopInline(); return; }
+
+  /* Shield badge tap */
+  if (e.target.closest('#shieldBadge')) {
+    toast(POPUP_SHIELD
+      ? '🛡️ Pop-ups & top-redirects blocked while playing'
+      : '⚠️ Pop-up shield is OFF — set POPUP_SHIELD = true to re-enable',
+      2400);
+    return;
+  }
+
+  /* Play buttons */
   const playBtn = e.target.closest('[data-play-id]');
   if (playBtn) {
-    playContent(playBtn.dataset.playId, playBtn.dataset.playType);
+    const id   = Number(playBtn.dataset.playId);
+    const type = playBtn.dataset.playType;
+
+    if (playBtn.closest('#sheetScroll')) {
+      /* Inside the detail sheet → play inline right away */
+      playContent(id, type);
+    } else {
+      /* Hero button → open the sheet and auto-play inline */
+      openDetail(id, type, true);
+    }
     return;
   }
 });
@@ -1435,20 +1444,19 @@ document.addEventListener('click', e => {
 /* escape key (desktop testing) */
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
-  if (player.classList.contains('open')) closePlayer();
-  else if (sheet.classList.contains('open')) closeDetail();
+  if (sheet.classList.contains('open')) closeDetail();
 });
 
 /* =====================================================================
    KEY / URL BANNER
    ===================================================================== */
 function showConfigBanner() {
-  const missingKey = !TMDB_API_KEY || TMDB_API_KEY === 'PASTE_YOUR_TMDB_API_KEY_HERE';
+  const missingKey  = !TMDB_API_KEY || TMDB_API_KEY === 'PASTE_YOUR_TMDB_API_KEY_HERE';
   const missingUrls = MOVIE_URL.includes('your-free-website.com');
 
   if (missingKey || missingUrls) {
     const parts = [];
-    if (missingKey) parts.push('<b>TMDB API key missing</b>');
+    if (missingKey)  parts.push('<b>TMDB API key missing</b>');
     if (missingUrls) parts.push('<b>Embed URLs not configured</b>');
     document.body.insertAdjacentHTML('afterbegin', `
       <div class="key-banner">
