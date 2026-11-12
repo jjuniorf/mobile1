@@ -25,7 +25,9 @@ img{display:block}
 :root{
   --bg:#08080b;--surface:#121218;--surface2:#1b1b24;
   --line:rgba(255,255,255,.08);--text:#f6f6f8;--muted:#8b8b9a;
-  --accent:#ff3b5c;--gold:#ffd166;
+  --accent:#ff3b5c;
+  --gold:#4ade80;          /* ← rating color: now green */
+  --rating:#4ade80;        /* alias for clarity */
 }
 
 .app{
@@ -184,7 +186,7 @@ img{display:block}
 }
 .hero-meta{font-size:12.5px;color:#c9c9d4;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 .hero-meta .dot{width:3px;height:3px;border-radius:50%;background:#6d6d7c}
-.hero-meta .star{color:var(--gold);font-weight:700}
+.hero-meta .star{color:var(--rating);font-weight:700}
 .hero-actions{display:flex;gap:10px;align-items:center}
 
 .btn-main{
@@ -230,7 +232,8 @@ img{display:block}
 .poster img{position:relative;width:100%;height:100%;object-fit:cover}
 .rate{
   position:absolute;left:6px;top:6px;font-size:9.5px;font-weight:800;letter-spacing:.2px;
-  padding:3px 6px;border-radius:6px;color:var(--gold);
+  padding:3px 6px;border-radius:6px;
+  color:var(--rating);                     /* ← green rating badge text */
   background:rgba(0,0,0,.66);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
 }
 .fav-mark{
@@ -387,7 +390,7 @@ img{display:block}
   background:var(--surface2);border:1px solid var(--line);
   padding:5px 10px;border-radius:8px;
 }
-.meta-row .pill.gold{color:var(--gold)}
+.meta-row .pill.gold{color:var(--rating)}   /* ← green rating pill */
 .genres{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
 .genres span{
   font-size:11.5px;font-weight:650;color:#c2c2d0;
@@ -439,6 +442,31 @@ img{display:block}
 .inline-close:active{transform:scale(.9);background:rgba(0,0,0,.85)}
 .inline-close svg{
   width:13px;height:13px;stroke:#fff;stroke-width:2.4;fill:none;stroke-linecap:round;
+}
+
+/* ================= SERVER SWITCHER ================= */
+.server-bar{
+  display:flex;gap:6px;padding:10px 12px;
+  overflow-x:auto;
+  background:rgba(14,14,20,.94);
+  border-top:1px solid rgba(255,255,255,.06);
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+.server-bar::-webkit-scrollbar{display:none}
+.server-chip{
+  flex:0 0 auto;
+  padding:7px 14px;border-radius:8px;
+  font-size:11.5px;font-weight:700;letter-spacing:.15px;
+  background:rgba(255,255,255,.06);color:#a0a0b0;
+  border:1px solid rgba(255,255,255,.08);
+  white-space:nowrap;
+  transition:background .2s ease,color .2s ease,border-color .2s ease,transform .15s ease;
+}
+.server-chip:active{transform:scale(.94)}
+.server-chip.active{
+  background:#fff;color:#0a0a0d;border-color:#fff;
+  box-shadow:0 2px 8px rgba(255,255,255,.18);
 }
 
 /* ================= POPUP SHIELD BADGE ================= */
@@ -651,14 +679,29 @@ const TMDB_API_KEY = '5adcefa4f28acf78843a6bc42e7b5e2d';
 
 /* ╔══════════════════════════════════════════════════════════════════════╗
    ║                                                                      ║
-   ║   ⬇⬇⬇   STEP 2: PUT YOUR STREAMING EMBED URLs ON THE NEXT LINES ⬇⬇⬇ ║
+   ║   ⬇⬇⬇   STEP 2: ADD YOUR STREAMING EMBED SERVERS BELOW   ⬇⬇⬇       ║
+   ║                                                                      ║
+   ║   You can add as many servers as you like — they appear as pills     ║
+   ║   under the video when you hit play. Users can swap servers if       ║
+   ║   the current one is lagging. The "name" is what shows on the chip.  ║
    ║                                                                      ║
    ║   Placeholders {id}, {season}, {episode} are replaced at play time.  ║
    ║                                                                      ║
    ╚══════════════════════════════════════════════════════════════════════╝ */
 
-const MOVIE_URL = 'https://cinesrc.st/embed/movie/{id}';
-const TV_URL    = 'https://cinesrc.st/embed/tv/{id}?s={season}&e={episode}';
+const MOVIE_SERVERS = [
+  { name: 'Server 1', url: 'https://cinesrc.st/embed/movie/{id}' },
+  { name: 'Server 2', url: 'https://www.2embed.cc/embed/{id}' },
+  { name: 'Server 3', url: 'https://fmov.my/embed/movie/{id}' },
+  { name: 'Server 4', url: 'https://framextv.xyz/embed/{id}?autoplay=0&muted=0' },
+];
+
+const TV_SERVERS = [
+  { name: 'Server 1', url: 'https://cinesrc.st/embed/tv/{id}?s={season}&e={episode}' },
+  { name: 'Server 2', url: 'https://fmov.my/embed/series/{id}/{season}/{episode}' },
+  { name: 'Server 3', url: 'https://framextv.xyz/embed/{id}/{season}/{episode}' },
+  { name: 'Server 4', url: 'https://web.nxsha.app/embed/tv/{id}/{season}/{episode}?lang=en' },
+];
 
 /* ╔══════════════════════════════════════════════════════════════════════╗
    ║                                                                      ║
@@ -674,13 +717,17 @@ const POPUP_SHIELD = true;
 
 
 /* =====================================================================
-   EMBED URL BUILDERS
+   EMBED URL BUILDERS  (server-index aware)
    ===================================================================== */
-function buildMovieUrl(id) {
-  return MOVIE_URL.replace(/\{id\}/g, encodeURIComponent(id));
+function buildMovieUrl(id, serverIdx = 0) {
+  const server = MOVIE_SERVERS[serverIdx] || MOVIE_SERVERS[0];
+  if (!server) return '';
+  return server.url.replace(/\{id\}/g, encodeURIComponent(id));
 }
-function buildTVUrl(id, season, episode) {
-  return TV_URL
+function buildTVUrl(id, season, episode, serverIdx = 0) {
+  const server = TV_SERVERS[serverIdx] || TV_SERVERS[0];
+  if (!server) return '';
+  return server.url
     .replace(/\{id\}/g, encodeURIComponent(id))
     .replace(/\{season\}/g, encodeURIComponent(season))
     .replace(/\{episode\}/g, encodeURIComponent(episode));
@@ -795,6 +842,12 @@ catch { state.favs = []; }
 const saveFavs = () => {
   try { localStorage.setItem('reelix:favs', JSON.stringify(state.favs)); } catch {}
 };
+
+/* =====================================================================
+   PLAYER CONTEXT (tracks what's playing + which server)
+   ===================================================================== */
+let currentPlayCtx   = null;   // { id, type, season, episode }
+let currentServerIdx = 0;
 
 /* =====================================================================
    PAGER
@@ -940,13 +993,11 @@ function renderHome() {
 }
 
 /* =====================================================================
-   GENRE CHIPS  ←  FIXED: instantly updates .active on tap
+   GENRE CHIPS
    ===================================================================== */
 function renderChips(el, genres, active, onPick) {
   if (!el) return;
 
-  /* Preserve the current scroll position so tapping a chip near the
-     right edge doesn't snap the strip back to the start. */
   const scrollPos = el.scrollLeft;
 
   el.innerHTML =
@@ -960,13 +1011,7 @@ function renderChips(el, genres, active, onPick) {
   el.onclick = e => {
     const b = e.target.closest('.chip');
     if (!b) return;
-
-    /* ⬇⬇ THE FIX: move .active to the tapped chip immediately,
-       so "All" correctly de-highlights when another genre is picked. */
-    el.querySelectorAll('.chip').forEach(c =>
-      c.classList.toggle('active', c === b)
-    );
-
+    el.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === b));
     onPick(b.dataset.g);
   };
 }
@@ -1273,6 +1318,10 @@ const sheetScroll = $('#sheetScroll');
 let currentItem = null;
 
 async function openDetail(id, type, autoPlay = false) {
+  /* Clean up any playing video from the previously opened title
+     — this is what resets the server back to Server 1. */
+  stopInline();
+
   sheet.classList.add('open');
   document.body.classList.add('locked');
   sheetScroll.scrollTop = 0;
@@ -1356,6 +1405,8 @@ function renderDetail(d, type) {
             <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
           </button>
         </div>
+        <!-- Server switcher (rendered dynamically once playing) -->
+        <div class="server-bar" id="serverBar"></div>
       </div>
 
       ${hasSeasons ? `
@@ -1397,12 +1448,7 @@ function setupSeasons(seriesId, seasons) {
   chipsEl.onclick = e => {
     const chip = e.target.closest('[data-season]');
     if (!chip) return;
-
-    /* Same fix as genre chips — move .active to the tapped season */
-    chipsEl.querySelectorAll('.chip').forEach(c =>
-      c.classList.toggle('active', c === chip)
-    );
-
+    chipsEl.querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === chip));
     loadSeasonEpisodes(seriesId, Number(chip.dataset.season), chipsEl, listEl);
   };
 
@@ -1468,19 +1514,39 @@ async function loadSeasonEpisodes(seriesId, seasonNumber, chipsEl, listEl) {
 }
 
 /* =====================================================================
-   INLINE PLAYER
+   INLINE PLAYER  +  SERVER SWITCHER
    ===================================================================== */
 let firstPlayToastShown = false;
 
-function playInline(url) {
-  if (!url) { toast('No source available'); return; }
+function playContent(id, type, season = 1, episode = 1) {
+  if (!id) { toast('No source available'); return; }
 
   const wrap  = $('#inlinePlayer');
   const frame = $('#embedFrame');
   if (!wrap || !frame) { toast('Player not ready'); return; }
 
+  /* ─────────────────────────────────────────────────────────────
+     Preserve the current server across episode switches.
+     stopInline() (called on close / new title) resets the index
+     to 0, so a fresh open always starts at Server 1 — but tapping
+     a different episode keeps you on whichever server you chose.
+     Clamp defensively in case the new type has fewer servers.
+     ───────────────────────────────────────────────────────────── */
+  const servers = type === 'tv' ? TV_SERVERS : MOVIE_SERVERS;
+  if (!currentPlayCtx) currentServerIdx = 0;
+  if (currentServerIdx < 0 || currentServerIdx >= servers.length) currentServerIdx = 0;
+
+  currentPlayCtx = { id, type, season, episode };
+
+  const url = type === 'tv'
+    ? buildTVUrl(id, season, episode, currentServerIdx)
+    : buildMovieUrl(id, currentServerIdx);
+
+  if (!url) { toast('Server not available'); return; }
+
   frame.src = url;
   wrap.hidden = false;
+  updateServerBar();
 
   setTimeout(() => {
     try {
@@ -1499,23 +1565,52 @@ function playInline(url) {
   }
 }
 
+/* Swap to a different server for the currently playing content */
+function loadServer(idx) {
+  if (!currentPlayCtx) return;
+
+  const frame = $('#embedFrame');
+  if (!frame) return;
+
+  const { id, type, season, episode } = currentPlayCtx;
+  const servers = type === 'tv' ? TV_SERVERS : MOVIE_SERVERS;
+  if (idx < 0 || idx >= servers.length) return;
+
+  const url = type === 'tv'
+    ? buildTVUrl(id, season, episode, idx)
+    : buildMovieUrl(id, idx);
+
+  if (!url) { toast('Server not available'); return; }
+
+  currentServerIdx = idx;
+  frame.src = url;
+  updateServerBar();
+}
+
+/* Render the server pills inside the player */
+function updateServerBar() {
+  const bar = $('#serverBar');
+  if (!bar || !currentPlayCtx) return;
+
+  const servers = currentPlayCtx.type === 'tv' ? TV_SERVERS : MOVIE_SERVERS;
+
+  bar.innerHTML = servers.map((s, i) =>
+    `<button class="server-chip ${i === currentServerIdx ? 'active' : ''}" data-server="${i}">${esc(s.name)}</button>`
+  ).join('');
+}
+
 function stopInline() {
   const wrap  = $('#inlinePlayer');
   const frame = $('#embedFrame');
   if (wrap)  wrap.hidden = true;
   if (frame) frame.src = '';
+  currentPlayCtx   = null;
+  currentServerIdx = 0;   // ← reset to Server 1 when the player closes
 }
 
-function playMovie(id) {
-  playInline(buildMovieUrl(id));
-}
-function playTV(id, season = 1, episode = 1) {
-  playInline(buildTVUrl(id, season, episode));
-}
-function playContent(id, type) {
-  if (type === 'tv') playTV(id, 1, 1);
-  else playMovie(id);
-}
+/* Public wrappers (keep existing call sites working) */
+function playMovie(id) { playContent(id, 'movie', 1, 1); }
+function playTV(id, season = 1, episode = 1) { playContent(id, 'tv', season, episode); }
 
 function closeDetail() {
   stopInline();
@@ -1609,6 +1704,13 @@ document.addEventListener('click', e => {
 
   if (e.target.closest('#inlineClose')) { stopInline(); return; }
 
+  /* Server chip tap */
+  const serverChip = e.target.closest('.server-chip[data-server]');
+  if (serverChip) {
+    loadServer(Number(serverChip.dataset.server));
+    return;
+  }
+
   if (e.target.closest('#shieldBadge')) {
     toast(POPUP_SHIELD
       ? '🛡️ Pop-ups & top-redirects blocked while playing'
@@ -1641,12 +1743,13 @@ document.addEventListener('keydown', e => {
    ===================================================================== */
 function showConfigBanner() {
   const missingKey  = !TMDB_API_KEY || TMDB_API_KEY === 'PASTE_YOUR_TMDB_API_KEY_HERE';
-  const missingUrls = MOVIE_URL.includes('your-free-website.com');
+  const allServers  = [...MOVIE_SERVERS, ...TV_SERVERS];
+  const missingUrls = allServers.some(s => !s.url || s.url.includes('your-free-website.com'));
 
   if (missingKey || missingUrls) {
     const parts = [];
     if (missingKey)  parts.push('<b>TMDB API key missing</b>');
-    if (missingUrls) parts.push('<b>Embed URLs not configured</b>');
+    if (missingUrls) parts.push('<b>Embed server URLs not configured</b>');
     document.body.insertAdjacentHTML('afterbegin', `
       <div class="key-banner">
         ⚠️ ${parts.join(' · ')}<br>
