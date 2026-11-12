@@ -34,6 +34,108 @@ img{display:block}
   padding-bottom:calc(88px + env(safe-area-inset-bottom));
 }
 
+/* ================= LOADING SCREEN ================= */
+.loading-screen{
+  position:fixed;inset:0;z-index:99999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:40px 24px;text-align:center;
+  background:
+    radial-gradient(circle at 50% 42%, #1c1022 0%, #0a0a10 48%, #050507 100%);
+  overflow:hidden;touch-action:none;
+  transition:opacity .55s cubic-bezier(.4,0,.2,1),visibility .55s;
+}
+.loading-screen.done{opacity:0;visibility:hidden;pointer-events:none}
+
+.loading-glow{
+  position:absolute;top:50%;left:50%;
+  width:420px;height:420px;border-radius:50%;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(255,59,92,.28) 0%,rgba(255,59,92,0) 65%);
+  filter:blur(30px);pointer-events:none;
+  animation:glowPulse 3s ease-in-out infinite;
+}
+@keyframes glowPulse{
+  0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.6}
+  50%{transform:translate(-50%,-50%) scale(1.18);opacity:1}
+}
+
+.loading-logo{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;
+  animation:logoIn .85s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes logoIn{
+  from{opacity:0;transform:translateY(24px) scale(.9)}
+  to{opacity:1;transform:none}
+}
+
+.loading-mark{
+  width:82px;height:82px;border-radius:24px;
+  display:grid;place-items:center;position:relative;
+  font-size:38px;font-weight:900;color:#fff;letter-spacing:-1px;
+  background:linear-gradient(140deg,#ff3b5c 0%,#ff6e85 55%,#ff8fa3 100%);
+  box-shadow:
+    0 20px 50px rgba(255,59,92,.45),
+    0 4px 12px rgba(0,0,0,.5),
+    inset 0 2px 5px rgba(255,255,255,.35);
+  animation:markBob 2.4s ease-in-out infinite;
+}
+@keyframes markBob{
+  0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-4px) scale(1.035)}
+}
+.loading-mark::before{
+  content:"";position:absolute;inset:-10px;border-radius:32px;
+  border:2px solid transparent;
+  border-top-color:rgba(255,255,255,.7);
+  border-right-color:rgba(255,59,92,.4);
+  animation:ringSpin 1.5s linear infinite;
+}
+@keyframes ringSpin{to{transform:rotate(360deg)}}
+
+.loading-brand{
+  margin-top:24px;
+  font-size:34px;font-weight:900;letter-spacing:7px;line-height:1;
+  background:linear-gradient(94deg,#ffffff 0%,#ffb3c0 45%,#ff3b5c 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 14px rgba(255,59,92,.35));
+}
+
+.loading-tagline{
+  margin-top:11px;
+  font-size:10.5px;font-weight:700;letter-spacing:3.5px;text-transform:uppercase;
+  color:#7a7a8a;
+  opacity:0;transform:translateY(6px);
+  animation:fadeUp .55s ease .35s forwards;
+}
+@keyframes fadeUp{to{opacity:1;transform:none}}
+
+.loading-bar{
+  position:relative;z-index:2;
+  width:210px;height:3px;border-radius:999px;
+  background:rgba(255,255,255,.07);
+  overflow:hidden;margin-top:38px;
+  opacity:0;transform:translateY(6px);
+  animation:fadeUp .55s ease .45s forwards;
+}
+.loading-bar-fill{
+  height:100%;width:0%;border-radius:inherit;
+  background:linear-gradient(90deg,#ff3b5c 0%,#ff8fa3 100%);
+  box-shadow:0 0 14px rgba(255,59,92,.75);
+  transition:width .55s cubic-bezier(.3,.7,.4,1);
+}
+
+.loading-status{
+  position:relative;z-index:2;
+  margin-top:16px;min-height:14px;
+  font-size:10.5px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:#6e6e7d;
+  opacity:0;transform:translateY(6px);
+  animation:fadeUp .55s ease .55s forwards;
+  transition:color .3s ease;
+}
+.loading-status.ready{color:#7ce2a8}
+
 /* ================= VIEWS ================= */
 .view{display:none}
 .view.active{display:block;animation:viewIn .38s cubic-bezier(.22,.61,.36,1) both}
@@ -171,7 +273,8 @@ img{display:block}
 .chip{
   flex:0 0 auto;padding:8px 15px;border-radius:999px;font-size:12.5px;font-weight:650;
   background:var(--surface);color:var(--muted);
-  border:1px solid var(--line);transition:all .22s cubic-bezier(.3,.7,.4,1);
+  border:1px solid var(--line);
+  transition:transform .16s ease,background .22s ease,color .22s ease,border-color .22s ease;
 }
 .chip:active{transform:scale(.94)}
 .chip.active{background:#fff;color:#0a0a0d;border-color:#fff}
@@ -421,9 +524,24 @@ img{display:block}
 .key-banner b{color:#fff}
 
 body.locked{overflow:hidden}
+body.loading-active{overflow:hidden}
 </style>
 </head>
-<body>
+<body class="loading-active">
+
+<!-- ============ LOADING SCREEN ============ -->
+<div class="loading-screen" id="loadingScreen" role="status" aria-live="polite">
+  <div class="loading-glow"></div>
+  <div class="loading-logo">
+    <div class="loading-mark">R</div>
+    <div class="loading-brand">REELIX</div>
+    <div class="loading-tagline">Movies &amp; TV · Just for you</div>
+  </div>
+  <div class="loading-bar">
+    <div class="loading-bar-fill" id="loadingBarFill"></div>
+  </div>
+  <div class="loading-status" id="loadingStatus">Connecting…</div>
+</div>
 
 <div class="app">
 
@@ -537,12 +655,6 @@ const TMDB_API_KEY = '5adcefa4f28acf78843a6bc42e7b5e2d';
    ║                                                                      ║
    ║   Placeholders {id}, {season}, {episode} are replaced at play time.  ║
    ║                                                                      ║
-   ║   Popular free embed sites:                                          ║
-   ║     https://vidsrc.to/embed/movie/{id}                               ║
-   ║     https://vidsrc.to/embed/tv/{id}/{season}/{episode}               ║
-   ║     https://embed.su/embed/movie/{id}                                ║
-   ║     https://embed.su/embed/tv/{id}/{season}/{episode}                ║
-   ║                                                                      ║
    ╚══════════════════════════════════════════════════════════════════════╝ */
 
 const MOVIE_URL = 'https://cinesrc.st/embed/movie/{id}';
@@ -595,6 +707,70 @@ function formatDate(dateStr) {
     if (isNaN(d.getTime())) return dateStr;
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   } catch { return dateStr; }
+}
+
+/* =====================================================================
+   LOADING SCREEN CONTROLLER
+   ===================================================================== */
+const loadStartTime = Date.now();
+const MIN_LOAD_TIME = 1400;
+let   loadProgress  = 0;
+let   loadTimer     = null;
+let   loadFinished  = false;
+
+const loadingScreen  = $('#loadingScreen');
+const loadingBarFill = $('#loadingBarFill');
+const loadingStatus  = $('#loadingStatus');
+
+function setLoadProgress(pct, statusText) {
+  loadProgress = Math.max(loadProgress, Math.min(Number(pct) || 0, 100));
+  if (loadingBarFill) loadingBarFill.style.width = loadProgress + '%';
+  if (statusText && loadingStatus) loadingStatus.textContent = statusText;
+}
+
+function startLoadAnimation() {
+  const steps = [
+    [10, 'Connecting to TMDB…'],
+    [22, 'Fetching trending…'],
+    [36, 'Loading popular movies…'],
+    [50, 'Loading TV shows…'],
+    [64, 'Loading top rated…'],
+    [76, 'Fetching genres…'],
+    [88, 'Finishing up…'],
+  ];
+  let i = 0;
+  const tick = () => {
+    if (loadFinished) return;
+    if (i >= steps.length) return;
+    setLoadProgress(steps[i][0], steps[i][1]);
+    i++;
+    loadTimer = setTimeout(tick, 220 + Math.random() * 140);
+  };
+  tick();
+}
+
+function finishLoading(success = true) {
+  if (loadFinished) return;
+  loadFinished = true;
+  clearTimeout(loadTimer);
+
+  const elapsed = Date.now() - loadStartTime;
+  const remaining = Math.max(0, MIN_LOAD_TIME - elapsed);
+
+  setTimeout(() => {
+    setLoadProgress(100, success ? 'Ready' : 'Setup required');
+    if (loadingStatus) loadingStatus.classList.toggle('ready', success);
+
+    setTimeout(() => {
+      if (loadingScreen) {
+        loadingScreen.classList.add('done');
+        document.body.classList.remove('loading-active');
+        setTimeout(() => {
+          if (loadingScreen && loadingScreen.parentNode) loadingScreen.remove();
+        }, 700);
+      }
+    }, success ? 420 : 750);
+  }, remaining);
 }
 
 /* =====================================================================
@@ -764,18 +940,34 @@ function renderHome() {
 }
 
 /* =====================================================================
-   GENRE CHIPS
+   GENRE CHIPS  ←  FIXED: instantly updates .active on tap
    ===================================================================== */
 function renderChips(el, genres, active, onPick) {
+  if (!el) return;
+
+  /* Preserve the current scroll position so tapping a chip near the
+     right edge doesn't snap the strip back to the start. */
+  const scrollPos = el.scrollLeft;
+
   el.innerHTML =
     `<button class="chip ${active === 'all' ? 'active' : ''}" data-g="all">All</button>` +
     genres.map(g =>
       `<button class="chip ${String(g.id) === String(active) ? 'active' : ''}" data-g="${g.id}">${esc(g.name)}</button>`
     ).join('');
 
+  el.scrollLeft = scrollPos;
+
   el.onclick = e => {
     const b = e.target.closest('.chip');
-    if (b) onPick(b.dataset.g);
+    if (!b) return;
+
+    /* ⬇⬇ THE FIX: move .active to the tapped chip immediately,
+       so "All" correctly de-highlights when another genre is picked. */
+    el.querySelectorAll('.chip').forEach(c =>
+      c.classList.toggle('active', c === b)
+    );
+
+    onPick(b.dataset.g);
   };
 }
 
@@ -805,14 +997,16 @@ function fetchTVPage(page, genre) {
    MOVIES
    ===================================================================== */
 function initMovies() {
-  renderChips($('#movie-chips'), state.genresMovie, state.movieGenre, g => {
+  const onGenrePick = g => {
     if (g === state.movieGenre) return;
     state.movieGenre = g;
     $('#movie-grid').innerHTML = skeletonCards(9);
     $('#movie-sentinel').innerHTML = '';
     resetPager(moviePager, g);
     loadMoreMovies();
-  });
+  };
+
+  renderChips($('#movie-chips'), state.genresMovie, state.movieGenre, onGenrePick);
 
   $('#movie-grid').innerHTML = skeletonCards(9);
   $('#movie-sentinel').innerHTML = '';
@@ -865,14 +1059,16 @@ async function loadMoreMovies() {
    TV SHOWS
    ===================================================================== */
 function initTV() {
-  renderChips($('#tv-chips'), state.genresTV, state.tvGenre, g => {
+  const onGenrePick = g => {
     if (g === state.tvGenre) return;
     state.tvGenre = g;
     $('#tv-grid').innerHTML = skeletonCards(9);
     $('#tv-sentinel').innerHTML = '';
     resetPager(tvPager, g);
     loadMoreTV();
-  });
+  };
+
+  renderChips($('#tv-chips'), state.genresTV, state.tvGenre, onGenrePick);
 
   $('#tv-grid').innerHTML = skeletonCards(9);
   $('#tv-sentinel').innerHTML = '';
@@ -1087,7 +1283,6 @@ async function openDetail(id, type, autoPlay = false) {
     renderDetail(d, type);
 
     if (autoPlay) {
-      /* Wait for the sheet slide animation, then play inline */
       setTimeout(() => playContent(id, type), 380);
     }
   } catch {
@@ -1202,6 +1397,12 @@ function setupSeasons(seriesId, seasons) {
   chipsEl.onclick = e => {
     const chip = e.target.closest('[data-season]');
     if (!chip) return;
+
+    /* Same fix as genre chips — move .active to the tapped season */
+    chipsEl.querySelectorAll('.chip').forEach(c =>
+      c.classList.toggle('active', c === chip)
+    );
+
     loadSeasonEpisodes(seriesId, Number(chip.dataset.season), chipsEl, listEl);
   };
 
@@ -1281,12 +1482,10 @@ function playInline(url) {
   frame.src = url;
   wrap.hidden = false;
 
-  /* Scroll the player into view (works even inside the sheet-scroll container) */
   setTimeout(() => {
     try {
       wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } catch (_) {
-      /* older browsers */
       const r = wrap.getBoundingClientRect();
       if (r.top < 0 || r.bottom > window.innerHeight) {
         wrap.scrollIntoView({ block: 'center' });
@@ -1294,7 +1493,6 @@ function playInline(url) {
     }
   }, 40);
 
-  /* Friendly one-time hint */
   if (POPUP_SHIELD && !firstPlayToastShown) {
     firstPlayToastShown = true;
     setTimeout(() => toast('🛡️ Pop-up protection active', 2200), 600);
@@ -1308,7 +1506,6 @@ function stopInline() {
   if (frame) frame.src = '';
 }
 
-/* Public play actions */
 function playMovie(id) {
   playInline(buildMovieUrl(id));
 }
@@ -1331,7 +1528,6 @@ function closeDetail() {
    POPUP SHIELD (parent-level guards)
    ===================================================================== */
 function setupPopupShield() {
-  /* Override window.open on our page */
   try {
     const original = window.open;
     window.open = function (...args) {
@@ -1342,7 +1538,6 @@ function setupPopupShield() {
     window.__reelixOriginalOpen = original;
   } catch (_) {}
 
-  /* Block _blank anchors in our own page */
   document.addEventListener('click', (e) => {
     const a = e.target.closest('a[target="_blank"]');
     if (a && !a.hasAttribute('data-allow-popup')) {
@@ -1412,10 +1607,8 @@ document.addEventListener('click', e => {
   if (e.target.closest('#heroFav')) { toggleFav(state.hero); return; }
   if (e.target.closest('[data-fav-sheet]')) { toggleFav(currentItem); return; }
 
-  /* Inline player close */
   if (e.target.closest('#inlineClose')) { stopInline(); return; }
 
-  /* Shield badge tap */
   if (e.target.closest('#shieldBadge')) {
     toast(POPUP_SHIELD
       ? '🛡️ Pop-ups & top-redirects blocked while playing'
@@ -1424,24 +1617,20 @@ document.addEventListener('click', e => {
     return;
   }
 
-  /* Play buttons */
   const playBtn = e.target.closest('[data-play-id]');
   if (playBtn) {
     const id   = Number(playBtn.dataset.playId);
     const type = playBtn.dataset.playType;
 
     if (playBtn.closest('#sheetScroll')) {
-      /* Inside the detail sheet → play inline right away */
       playContent(id, type);
     } else {
-      /* Hero button → open the sheet and auto-play inline */
       openDetail(id, type, true);
     }
     return;
   }
 });
 
-/* escape key (desktop testing) */
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
   if (sheet.classList.contains('open')) closeDetail();
@@ -1471,12 +1660,15 @@ function showConfigBanner() {
    BOOT
    ===================================================================== */
 async function boot() {
+  startLoadAnimation();
+
   showConfigBanner();
   setupPopupShield();
 
   if (!TMDB_API_KEY || TMDB_API_KEY === 'PASTE_YOUR_TMDB_API_KEY_HERE') {
     $('#home-hero').innerHTML = '';
     $('#home-rows').innerHTML = errorHTML('Add your TMDB API key to start.');
+    finishLoading(false);
     return;
   }
 
@@ -1511,10 +1703,12 @@ async function boot() {
     setupInfiniteScroll();
     renderSearchIdle();
 
+    finishLoading(true);
   } catch (err) {
     console.error(err);
     $('#home-hero').innerHTML = '';
     $('#home-rows').innerHTML = errorHTML('Could not reach TMDB. Verify your API key.');
+    finishLoading(false);
   }
 }
 
